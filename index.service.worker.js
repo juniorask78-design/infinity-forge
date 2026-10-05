@@ -4,7 +4,7 @@
 // Incrementing CACHE_VERSION will kick off the install event and force
 // previously cached resources to be updated from the network.
 /** @type {string} */
-const CACHE_VERSION = '1791156134|85851416';
+const CACHE_VERSION = '1791181497|109471701';
 /** @type {string} */
 const CACHE_PREFIX = 'Infinity Forge-sw-cache-';
 const CACHE_NAME = CACHE_PREFIX + CACHE_VERSION;
