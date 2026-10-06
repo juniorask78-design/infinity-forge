@@ -1,0 +1,24 @@
+# Render (Blueprint) — serveur en ligne d'Infinity Forge.
+# Render lit ce fichier quand on crée un « Blueprint » à partir de ce dépôt GitHub.
+# Adresse attendue : https://infinity-forge-serveur.onrender.com (wss://… pour le jeu).
+# Si le nom est déjà pris, Render ajoute un suffixe : l'adresse réelle s'affiche en haut
+# de la page du service ; la reporter dans data/online_config.json (official_url) du projet.
+services:
+  - type: web
+    name: infinity-forge-serveur
+    runtime: docker
+    # Offre gratuite : 0 € ; s'endort après 15 min sans visite (réveil ~1 min).
+    plan: free
+    region: frankfurt
+    dockerContext: ./server
+    dockerfilePath: ./server/Dockerfile
+    # GET / répond 200 « Infinity Forge – serveur en ligne ».
+    healthCheckPath: /
+    # Une seule instance : les salons vivent en mémoire.
+    numInstances: 1
+    # Redéploiement automatique à chaque commit (champ actuel ; remplace « autoDeploy: true »).
+    autoDeployTrigger: commit
+    # Ne reconstruire le serveur que si le dossier server/ change (pas à chaque mise à jour du site).
+    buildFilter:
+      paths:
+        - server/**
