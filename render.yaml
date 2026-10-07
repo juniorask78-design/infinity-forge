@@ -12,8 +12,8 @@ services:
     region: frankfurt
     dockerContext: ./server
     dockerfilePath: ./server/Dockerfile
-    # GET / répond 200 « Infinity Forge – serveur en ligne ».
-    healthCheckPath: /
+    # GET /healthz : 200 si le backend écoute, sinon 503 ; identité publique JSON.
+    healthCheckPath: /healthz
     # Une seule instance : les salons vivent en mémoire.
     numInstances: 1
     # Redéploiement automatique à chaque commit (champ actuel ; remplace « autoDeploy: true »).

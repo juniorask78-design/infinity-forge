@@ -1,6 +1,6 @@
 # Serveur en ligne d'Infinity Forge pour Render (ou tout hébergeur Docker).
 # Ce dossier ne contient PAS les sources du jeu : seulement le paquet serveur exporté
-# (infinity_forge_server.pck : règles, réseau, données ; ni images ni sons).
+# (infinity_forge_server.pck : règles, réseau, données ; sans banque d'illustrations ni sons).
 # Régénérer le paquet : tools/server/exporter_serveur.sh (projet Godot, préréglage « Serveur »).
 #   docker build -t infinity-forge-serveur server
 #   docker run -p 8910:8910 -e PORT=8910 infinity-forge-serveur

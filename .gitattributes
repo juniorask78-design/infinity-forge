@@ -1,2 +1,7 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Preserve the exact bytes of validated deployment artifacts.
+server/Dockerfile -text
+server/infinity_forge_server.pck -text
+render.yaml -text
