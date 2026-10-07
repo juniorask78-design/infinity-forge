@@ -1,9 +1,9 @@
 {
-  "version": "0.3.2",
-  "build_id": "f923315be5fe52fcffe19bbd0b873f8e4fc9cd05e6b223f8888f59df45cf8cde",
-  "source_revision": "3205a999677b9225f79399b3e3cbceea4fc092e2e8fd079ad82c35aac0245554",
+  "version": "0.3.3",
+  "build_id": "121c811e6bc0fa71ba1f4c634a9a8bff56d1921ba0e3a5721e1c0d4ce19656c7",
+  "source_revision": "0df05d9f60c5e46db806028f0c5abb16428745dd901b4071961b0d6b76addf93",
   "protocol": 4,
-  "rules_revision": 5,
+  "rules_revision": 6,
   "source_commit": null,
   "source_archive": true,
   "files": {
@@ -11,23 +11,23 @@
       "bytes": 100108,
       "sha256": "cb1980c88089573bcacd7221d777c689bb8bbd778799f24c27fca0fe5f774d6d"
     },
-    "forge-f923315be5fe52fc.audio.position.worklet.js": {
+    "forge-121c811e6bc0fa71.audio.position.worklet.js": {
       "bytes": 2973,
       "sha256": "be33985bc7160d6bf9646f259cd86b259cd67b02ccb297ee5c44f8ac84327bc8"
     },
-    "forge-f923315be5fe52fc.audio.worklet.js": {
+    "forge-121c811e6bc0fa71.audio.worklet.js": {
       "bytes": 7298,
       "sha256": "5b476a9c9ce642c0ee4256436d1bc31d9c38f868aca0f9a8e2a57c18d2dec2a3"
     },
-    "forge-f923315be5fe52fc.js": {
+    "forge-121c811e6bc0fa71.js": {
       "bytes": 254525,
       "sha256": "662c951e5c2ca11c13a7afc3132c84ee6c7d7eaa43026a9aa61a55e8f290c737"
     },
-    "forge-f923315be5fe52fc.pck": {
-      "bytes": 11987472,
-      "sha256": "218b08cc42235f80bc85c7dd17ccfb295731dd48b90fa32eda5fbbcd7d959c16"
+    "forge-121c811e6bc0fa71.pck": {
+      "bytes": 11943208,
+      "sha256": "f6716e27a8ec8813f1e0578f6be55ae491621690123e05404cd0c8ae323cf49c"
     },
-    "forge-f923315be5fe52fc.wasm": {
+    "forge-121c811e6bc0fa71.wasm": {
       "bytes": 25019466,
       "sha256": "4d341042d0a211eb19ece46e2918d9f0b0baa3c4b1868e7dd4d803732be2c998"
     },
@@ -49,7 +49,7 @@
     },
     "index.html": {
       "bytes": 17289,
-      "sha256": "104c389f48a8c6fc3f2b2609987d5a53639aac8d60969f3004a8b96bd53f77a6"
+      "sha256": "c1164be4be864a4a305c0baee94a928e32ed2835826b9681d8e032f994f32816"
     },
     "index.icon.png": {
       "bytes": 13954,
