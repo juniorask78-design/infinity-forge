@@ -1,7 +1,7 @@
 {
-  "version": "0.3.1",
-  "build_id": "3fe26aacafc4445cc694d46899ee215bae5bd01c9806f71b8e421fb9d186a489",
-  "source_revision": "93d1f8b60cfe8002564db5a59672f4ddf124c507b2bbbefff980ae889465eaaa",
+  "version": "0.3.2",
+  "build_id": "f923315be5fe52fcffe19bbd0b873f8e4fc9cd05e6b223f8888f59df45cf8cde",
+  "source_revision": "3205a999677b9225f79399b3e3cbceea4fc092e2e8fd079ad82c35aac0245554",
   "protocol": 4,
   "rules_revision": 5,
   "source_commit": null,
@@ -11,23 +11,23 @@
       "bytes": 100108,
       "sha256": "cb1980c88089573bcacd7221d777c689bb8bbd778799f24c27fca0fe5f774d6d"
     },
-    "forge-3fe26aacafc4445c.audio.position.worklet.js": {
+    "forge-f923315be5fe52fc.audio.position.worklet.js": {
       "bytes": 2973,
       "sha256": "be33985bc7160d6bf9646f259cd86b259cd67b02ccb297ee5c44f8ac84327bc8"
     },
-    "forge-3fe26aacafc4445c.audio.worklet.js": {
+    "forge-f923315be5fe52fc.audio.worklet.js": {
       "bytes": 7298,
       "sha256": "5b476a9c9ce642c0ee4256436d1bc31d9c38f868aca0f9a8e2a57c18d2dec2a3"
     },
-    "forge-3fe26aacafc4445c.js": {
+    "forge-f923315be5fe52fc.js": {
       "bytes": 254525,
       "sha256": "662c951e5c2ca11c13a7afc3132c84ee6c7d7eaa43026a9aa61a55e8f290c737"
     },
-    "forge-3fe26aacafc4445c.pck": {
-      "bytes": 11979828,
-      "sha256": "58e07c511822abc0cbc6cef325be8a02644804b6d174d8a20107973432d6146e"
+    "forge-f923315be5fe52fc.pck": {
+      "bytes": 11987472,
+      "sha256": "218b08cc42235f80bc85c7dd17ccfb295731dd48b90fa32eda5fbbcd7d959c16"
     },
-    "forge-3fe26aacafc4445c.wasm": {
+    "forge-f923315be5fe52fc.wasm": {
       "bytes": 25019466,
       "sha256": "4d341042d0a211eb19ece46e2918d9f0b0baa3c4b1868e7dd4d803732be2c998"
     },
@@ -49,7 +49,7 @@
     },
     "index.html": {
       "bytes": 17289,
-      "sha256": "cc54a48dcbf59ba65abe9d6fac680d376868459a9ce71123063682a391dde9fa"
+      "sha256": "104c389f48a8c6fc3f2b2609987d5a53639aac8d60969f3004a8b96bd53f77a6"
     },
     "index.icon.png": {
       "bytes": 13954,
