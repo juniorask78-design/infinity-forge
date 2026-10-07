@@ -34,6 +34,46 @@ jobs:
       - name: Build and test the frozen Linux container
         shell: bash
         run: bash tools/local/validate_linux_server.sh server validation build/linux-validation
+      - name: Assert completed validation
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          output = Path("build/linux-validation")
+          result = json.loads((output / "result.json").read_text())
+          identity = json.loads((output / "identity.json").read_text())
+          expected = {
+              "version": "0.3.0",
+              "source_revision": "f204c529d3a6e51b3997ff52f2d0a813f515c58cfe1d87c19afa68e0664bfe66",
+              "protocol": 4,
+              "rules_revision": 5,
+              "rules": "da42603253ac",
+          }
+          def require(condition, message):
+              if not condition:
+                  raise SystemExit(message)
+          require(type(result.get("exit_code")) is int and result["exit_code"] == 0, "Validation exit_code must be 0")
+          require(result.get("last_stage") == "complete", "Validation must reach complete")
+          require(result.get("linux_executed") is True, "Linux execution must be true")
+          require(identity.get("identity_matches") is True, "Identity match must be confirmed")
+          public_identity = {}
+          for section in ("health", "welcome"):
+              info = identity.get(section, {})
+              for key, value in expected.items():
+                  require(info.get(key) == value, f"{section} identity mismatch: {key}")
+              public_identity[section] = {key: info[key] for key in expected}
+          require(identity["health"].get("ready") is True, "Health must be ready")
+          require(identity["welcome"].get("t") == "welcome" and identity["welcome"].get("v") == 4, "Protocol 4 welcome required")
+          public_identity["health"]["ready"] = True
+          public_identity["welcome"].update(t="welcome", v=4)
+          public_result = {key: result[key] for key in ("exit_code", "last_stage", "linux_executed")}
+          evidence = {"result": public_result, "identity": public_identity}
+          summary = "## Linux validation completed\n\nFrozen server image and both external network tests passed.\n\n```json\n" + json.dumps(evidence, indent=2) + "\n```\n"
+          with Path(os.environ["GITHUB_STEP_SUMMARY"]).open("a", encoding="utf-8") as stream:
+              stream.write(summary)
+          print(json.dumps(evidence, indent=2))
+          PY
       - name: Print validation evidence
         if: always()
         shell: bash
