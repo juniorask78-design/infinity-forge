@@ -7,7 +7,7 @@
 		     l'encoche (viewport-fit=cover, marges transmises au jeu par window.ifSafeArea), message en
 		     cas de perte de l'affichage WebGL, et mise à jour du jeu installé (PWA). -->
 		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, viewport-fit=cover">
-		<meta name="theme-color" content="#090b16">
+		<meta name="theme-color" content="#141a33">
 		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 		<title>Infinity Forge</title>
 		<style>
@@ -27,8 +27,9 @@ html, body, #canvas {
 
 html, body {
 	width: 100%;
-	height: 100%;
-	background-color: var(--nuit);
+	height: 100vh;
+	height: 100dvh;
+	background-color: var(--nuit-2);
 }
 
 body {
@@ -42,6 +43,12 @@ body {
 }
 
 #canvas {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	height: 100dvh;
 	display: block;
 }
 
@@ -242,25 +249,66 @@ body {
 			</div>
 		</div>
 
-		<script src="forge-bf049ba13363bc45.js"></script>
+		<script src="forge-3fe26aacafc4445c.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"forge-bf049ba13363bc45","experimentalVK":false,"fileSizes":{"forge-bf049ba13363bc45.pck":11976440,"forge-bf049ba13363bc45.wasm":25019466},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4,"serviceWorker":"index.service.worker.js"};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":0,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"forge-3fe26aacafc4445c","experimentalVK":false,"fileSizes":{"forge-3fe26aacafc4445c.pck":11979828,"forge-3fe26aacafc4445c.wasm":25019466},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4,"serviceWorker":"index.service.worker.js"};
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
 
-// Marges de sécurité en fraction de la taille de la page (gauche, haut, droite, bas), lues par
-// SafeAreaContainer via JavaScriptBridge : indépendantes de la densité de pixels de l'écran.
+// La hauteur CSS couvre la fenêtre, même si innerHeight omet une zone système en PWA iOS.
+// Godot est exporté en politique « None » : le shell possède la taille du canvas, le moteur
+// observe son buffer. Ne pas ajouter de padding au canvas : le jeu protège déjà ses commandes.
+(function fitCanvas() {
+	const canvas = document.getElementById('canvas');
+	let pending = false;
+	function fit() {
+		pending = false;
+		const rect = canvas.getBoundingClientRect();
+		if (rect.width <= 0 || rect.height <= 0) return;
+		const ratio = window.devicePixelRatio || 1;
+		const width = Math.max(1, Math.floor(rect.width * ratio));
+		const height = Math.max(1, Math.floor(rect.height * ratio));
+		if (canvas.width !== width) canvas.width = width;
+		if (canvas.height !== height) canvas.height = height;
+	}
+	function schedule() {
+		if (pending) return;
+		pending = true;
+		window.requestAnimationFrame(fit);
+	}
+	if ('ResizeObserver' in window) new ResizeObserver(schedule).observe(canvas);
+	window.addEventListener('resize', schedule);
+	window.addEventListener('orientationchange', schedule);
+	window.addEventListener('pageshow', schedule);
+	document.addEventListener('fullscreenchange', schedule);
+	document.addEventListener('visibilitychange', schedule);
+	if (window.visualViewport) window.visualViewport.addEventListener('resize', schedule);
+	fit();
+}());
+
+// Marges en fraction du canvas CSS (gauche, haut, droite, bas), sans dépendre d'innerHeight
+// ni de la densité de pixels. Appliquées une seule fois au contenu par SafeAreaContainer.
 window.ifSafeArea = function () {
 	const probe = document.getElementById('if-safe');
 	const s = window.getComputedStyle(probe);
-	const w = Math.max(window.innerWidth, 1);
-	const h = Math.max(window.innerHeight, 1);
+	const rect = document.getElementById('canvas').getBoundingClientRect();
+	const w = Math.max(rect.width, 1);
+	const h = Math.max(rect.height, 1);
 	return JSON.stringify({
 		l: (parseFloat(s.paddingLeft) || 0) / w,
 		t: (parseFloat(s.paddingTop) || 0) / h,
 		r: (parseFloat(s.paddingRight) || 0) / w,
 		b: (parseFloat(s.paddingBottom) || 0) / h,
 	});
+};
+
+// Safari iPad peut annoncer un ordinateur : les points tactiles distinguent alors l'iPad
+// du Mac. Les dimensions CSS ne doivent pas être divisées une seconde fois par le DPR.
+window.ifDisplayProfile = function () {
+	const rect = document.getElementById('canvas').getBoundingClientRect();
+	const mobile = /Android|iPhone|iPad|iPod/.test(navigator.userAgent) ||
+		(navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+	return JSON.stringify({mobile, w: rect.width, h: rect.height});
 };
 
 (function () {
