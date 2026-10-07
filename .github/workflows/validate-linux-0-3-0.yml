@@ -1,0 +1,46 @@
+name: Validate frozen Infinity Forge 0.3.0 on Linux
+
+'on':
+  push:
+    branches: [codex/validation-0-3-0]
+    paths:
+      - '.github/workflows/validate-linux-0-3-0.yml'
+      - 'server/**'
+      - 'validation/**'
+      - 'tools/local/validate_linux_server.sh'
+      - 'tools/local/linux_server_identity.py'
+
+permissions:
+  contents: read
+
+jobs:
+  validate-linux:
+    if: github.ref == 'refs/heads/codex/validation-0-3-0'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      # Public repository checkout via Git; no third-party action and no token.
+      - name: Checkout validation commit
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          [[ "$GITHUB_REPOSITORY" =~ ^[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+$ ]]
+          [[ "$GITHUB_SHA" =~ ^[0-9a-f]{40}$ ]]
+          git init .
+          git remote add origin "https://github.com/$GITHUB_REPOSITORY.git"
+          git fetch --depth=1 origin "$GITHUB_SHA"
+          git checkout --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+      - name: Build and test the frozen Linux container
+        shell: bash
+        run: bash tools/local/validate_linux_server.sh server validation build/linux-validation
+      - name: Print validation evidence
+        if: always()
+        shell: bash
+        run: |
+          for file in linux.txt input-hashes.txt uid.txt ldd.txt identity.json result.json e2e_test.log online_e2e.log; do
+            if [[ -f "build/linux-validation/$file" ]]; then
+              printf '\nEvidence: %s\n' "$file"
+              cat "build/linux-validation/$file"
+            fi
+          done

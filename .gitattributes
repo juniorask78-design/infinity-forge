@@ -5,3 +5,10 @@
 server/Dockerfile -text
 server/infinity_forge_server.pck -text
 render.yaml -text
+
+# External scripts retain the hashes of the frozen CRLF originals.
+validation/*.gd -text
+# Linux validation tools and workflow must use LF on Ubuntu.
+tools/local/validate_linux_server.sh text eol=lf
+tools/local/linux_server_identity.py text eol=lf
+.github/workflows/validate-linux-0-3-0.yml text eol=lf
