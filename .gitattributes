@@ -5,3 +5,13 @@
 server/Dockerfile -text
 server/infinity_forge_server.pck -text
 render.yaml -text
+
+# Export manifests describe byte hashes; do not normalize generated artifacts.
+forge-* -text
+index.html -text
+index.manifest.json -text
+index.offline.html -text
+index.service.worker.js -text
+release.json -text
+LICENSE_Godot.txt -text
+COPYRIGHT_Godot.txt -text

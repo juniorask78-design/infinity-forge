@@ -1,166 +1,80 @@
-// This service worker is required to expose an exported Godot project as a
-// Progressive Web App. It provides an offline fallback page telling the user
-// that they need an Internet connection to run the project if desired.
-// Incrementing CACHE_VERSION will kick off the install event and force
-// previously cached resources to be updated from the network.
-/** @type {string} */
-const CACHE_VERSION = '1791354789|9554615';
-/** @type {string} */
-const CACHE_PREFIX = 'Infinity Forge-sw-cache-';
-const CACHE_NAME = CACHE_PREFIX + CACHE_VERSION;
-/** @type {string} */
-const OFFLINE_URL = 'index.offline.html';
-/** @type {boolean} */
-const ENSURE_CROSSORIGIN_ISOLATION_HEADERS = false;
-// Files that will be cached on load.
-/** @type {string[]} */
-const CACHED_FILES = ["index.html","index.js","index.offline.html","index.icon.png","index.apple-touch-icon.png","index.audio.worklet.js","index.audio.position.worklet.js"];
-// Files that we might not want the user to preload, and will only be cached on first load.
-/** @type {string[]} */
-const CACHEABLE_FILES = ["index.wasm","index.pck"];
-const FULL_CACHE = CACHED_FILES.concat(CACHEABLE_FILES);
+// Source du worker Infinity Forge. tools/local/package_web.py injecte une livraison vérifiée.
+const RELEASE = {"version":"0.3.0","build_id":"bf049ba13363bc456ea8180c7b92ef398a93616fce1bc6e93148cb4f0a0843e6","source_revision":"f204c529d3a6e51b3997ff52f2d0a813f515c58cfe1d87c19afa68e0664bfe66","protocol":4,"rules_revision":5,"source_commit":null,"source_archive":true,"files":{"COPYRIGHT_Godot.txt":{"bytes":100108,"sha256":"cb1980c88089573bcacd7221d777c689bb8bbd778799f24c27fca0fe5f774d6d"},"forge-bf049ba13363bc45.audio.position.worklet.js":{"bytes":2973,"sha256":"be33985bc7160d6bf9646f259cd86b259cd67b02ccb297ee5c44f8ac84327bc8"},"forge-bf049ba13363bc45.audio.worklet.js":{"bytes":7298,"sha256":"5b476a9c9ce642c0ee4256436d1bc31d9c38f868aca0f9a8e2a57c18d2dec2a3"},"forge-bf049ba13363bc45.js":{"bytes":254525,"sha256":"662c951e5c2ca11c13a7afc3132c84ee6c7d7eaa43026a9aa61a55e8f290c737"},"forge-bf049ba13363bc45.pck":{"bytes":11976440,"sha256":"44b8b5718cb59613dc3544f05bcc4205a7a53985c5af7417800cfe543be56607"},"forge-bf049ba13363bc45.wasm":{"bytes":25019466,"sha256":"4d341042d0a211eb19ece46e2918d9f0b0baa3c4b1868e7dd4d803732be2c998"},"index.144x144.png":{"bytes":12627,"sha256":"25f5b0fc96b882c95b647b2734c22413c3ad50060f2d1397e69b69df4c4f3036"},"index.180x180.png":{"bytes":13954,"sha256":"d157638f10eacb292809d196a739ebe762819d38e6eee689fe1f507d412f2a62"},"index.512x512.png":{"bytes":82442,"sha256":"3f2314ae4fb6231d86f4b4605af2dc68367fcd04e33825f34a1134b3e1a5446d"},"index.apple-touch-icon.png":{"bytes":13954,"sha256":"d157638f10eacb292809d196a739ebe762819d38e6eee689fe1f507d412f2a62"},"index.html":{"bytes":15224,"sha256":"cd32c27b13e3188e8c747367eec5de4c564c39391104cb183cce8f279f7e0f6f"},"index.icon.png":{"bytes":13954,"sha256":"d157638f10eacb292809d196a739ebe762819d38e6eee689fe1f507d412f2a62"},"index.manifest.json":{"bytes":488,"sha256":"2a971eedd570f0bc4774546e36354194081b86cb61b2ec872aa382a25a68b711"},"index.offline.html":{"bytes":971,"sha256":"b0a5d443e78f58717adac780bac91c1431bfa3b801c41f4707d507fb5ad2e47f"},"index.png":{"bytes":13959,"sha256":"f923378b12adf8954b4da4df9f8a1c8f897a71de1fdc2de9c1ff79fa282dcfd7"},"LICENSE_Godot.txt":{"bytes":1149,"sha256":"b0435e3b3e4e55238f05f4b306f30524a1b2e20147810d436eaa554fa6855c80"}}};
+const PREFIX = 'infinity-forge:' + self.registration.scope + ':';
+const CACHE = PREFIX + RELEASE.build_id;
+const BASE = new URL('./', self.registration.scope);
 
-self.addEventListener('install', (event) => {
-	event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(CACHED_FILES)));
-});
-
-self.addEventListener('activate', (event) => {
-	event.waitUntil(caches.keys().then(
-		function (keys) {
-			// Remove old caches.
-			return Promise.all(keys.filter((key) => key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME).map((key) => caches.delete(key)));
-		}
-	).then(function () {
-		// Enable navigation preload if available.
-		return ('navigationPreload' in self.registration) ? self.registration.navigationPreload.enable() : Promise.resolve();
-	}));
-});
-
-/**
- * Ensures that the response has the correct COEP/COOP headers
- * @param {Response} response
- * @returns {Response}
- */
-function ensureCrossOriginIsolationHeaders(response) {
-	if (response.headers.get('Cross-Origin-Embedder-Policy') === 'require-corp'
-		&& response.headers.get('Cross-Origin-Opener-Policy') === 'same-origin') {
-		return response;
-	}
-
-	const crossOriginIsolatedHeaders = new Headers(response.headers);
-	crossOriginIsolatedHeaders.set('Cross-Origin-Embedder-Policy', 'require-corp');
-	crossOriginIsolatedHeaders.set('Cross-Origin-Opener-Policy', 'same-origin');
-	const newResponse = new Response(response.body, {
-		status: response.status,
-		statusText: response.statusText,
-		headers: crossOriginIsolatedHeaders,
-	});
-
-	return newResponse;
+async function verifiedResponse(name, entry) {
+    // Les binaires immuables déjà chargés par le jeu peuvent venir du cache HTTP,
+    // puis sont tout de même vérifiés. Le shell mutable doit être actualisé.
+    const response = await fetch(new URL(name, BASE), {cache: name.startsWith('forge-') ? 'force-cache' : 'reload'});
+    if (!response.ok) throw new Error('Livraison incomplète : ' + name);
+    const bytes = await response.clone().arrayBuffer();
+    const digest = await crypto.subtle.digest('SHA-256', bytes);
+    const hash = Array.from(new Uint8Array(digest), n => n.toString(16).padStart(2, '0')).join('');
+    if (hash !== entry.sha256 || bytes.byteLength !== entry.bytes) {
+        throw new Error('Empreinte de livraison incorrecte : ' + name);
+    }
+    return response;
 }
 
-/**
- * Calls fetch and cache the result if it is cacheable
- * @param {FetchEvent} event
- * @param {Cache} cache
- * @param {boolean} isCacheable
- * @returns {Response}
- */
-async function fetchAndCache(event, cache, isCacheable) {
-	// Use the preloaded response, if it's there
-	/** @type { Response } */
-	let response = await event.preloadResponse;
-	if (response == null) {
-		// Or, go over network.
-		response = await self.fetch(event.request);
-	}
-
-	if (ENSURE_CROSSORIGIN_ISOLATION_HEADERS) {
-		response = ensureCrossOriginIsolationHeaders(response);
-	}
-
-	if (isCacheable) {
-		// And update the cache
-		cache.put(event.request, response.clone());
-	}
-
-	return response;
-}
-
-self.addEventListener(
-	'fetch',
-	/**
-	 * Triggered on fetch
-	 * @param {FetchEvent} event
-	 */
-	(event) => {
-		const isNavigate = event.request.mode === 'navigate';
-		const url = event.request.url || '';
-		const referrer = event.request.referrer || '';
-		const base = referrer.slice(0, referrer.lastIndexOf('/') + 1);
-		const local = url.startsWith(base) ? url.replace(base, '') : '';
-		const isCacheable = FULL_CACHE.some((v) => v === local) || (base === referrer && base.endsWith(CACHED_FILES[0]));
-		if (isNavigate || isCacheable) {
-			event.respondWith((async () => {
-				// Try to use cache first
-				const cache = await caches.open(CACHE_NAME);
-				if (isNavigate) {
-					// Check if we have full cache during HTML page request.
-					/** @type {Response[]} */
-					const fullCache = await Promise.all(FULL_CACHE.map((name) => cache.match(name)));
-					const missing = fullCache.some((v) => v === undefined);
-					if (missing) {
-						try {
-							// Try network if some cached file is missing (so we can display offline page in case).
-							const response = await fetchAndCache(event, cache, isCacheable);
-							return response;
-						} catch (e) {
-							// And return the hopefully always cached offline page in case of network failure.
-							console.error('Network error: ', e); // eslint-disable-line no-console
-							return caches.match(OFFLINE_URL);
-						}
-					}
-				}
-				let cached = await cache.match(event.request);
-				if (cached != null) {
-					if (ENSURE_CROSSORIGIN_ISOLATION_HEADERS) {
-						cached = ensureCrossOriginIsolationHeaders(cached);
-					}
-					return cached;
-				}
-				// Try network if don't have it in cache.
-				const response = await fetchAndCache(event, cache, isCacheable);
-				return response;
-			})());
-		} else if (ENSURE_CROSSORIGIN_ISOLATION_HEADERS) {
-			event.respondWith((async () => {
-				let response = await fetch(event.request);
-				response = ensureCrossOriginIsolationHeaders(response);
-				return response;
-			})());
-		}
-	}
-);
-
-self.addEventListener('message', (event) => {
-	// No cross origin
-	if (event.origin !== self.origin) {
-		return;
-	}
-	const id = event.source.id || '';
-	const msg = event.data || '';
-	// Ensure it's one of our clients.
-	self.clients.get(id).then(function (client) {
-		if (!client) {
-			return; // Not a valid client.
-		}
-		if (msg === 'claim') {
-			self.skipWaiting().then(() => self.clients.claim());
-		} else if (msg === 'clear') {
-			caches.delete(CACHE_NAME);
-		} else if (msg === 'update') {
-			self.skipWaiting().then(() => self.clients.claim()).then(() => self.clients.matchAll()).then((all) => all.forEach((c) => c.navigate(c.url)));
-		}
-	});
+self.addEventListener('install', event => {
+    event.waitUntil((async () => {
+        const cache = await caches.open(CACHE);
+        try {
+            // Séquentiel pour éviter plusieurs tampons WASM/PCK simultanés sur téléphone.
+            for (const [name, entry] of Object.entries(RELEASE.files)) {
+                await cache.put(new URL(name, BASE), await verifiedResponse(name, entry));
+            }
+        } catch (error) {
+            await caches.delete(CACHE);
+            throw error;
+        }
+    })());
 });
 
+self.addEventListener('activate', event => {
+    // Les caches précédents restent disponibles pour les anciens onglets et le retour de version.
+    // Pas de clients.claim/navigate global : aucune partie voisine n'est rechargée.
+    event.waitUntil(Promise.resolve());
+});
+
+self.addEventListener('fetch', event => {
+    if (event.request.method !== 'GET') return;
+    const url = new URL(event.request.url);
+    if (!url.href.startsWith(BASE.href)) return;
+    const name = url.href.slice(BASE.href.length).split('?')[0];
+    const navigation = event.request.mode === 'navigate' && (name === '' || name === 'index.html');
+    if (!navigation && !Object.hasOwn(RELEASE.files, name)) return;
+    event.respondWith((async () => {
+        const cache = await caches.open(CACHE);
+        const key = navigation ? 'index.html' : name;
+        const stored = await cache.match(new URL(key, BASE));
+        if (stored) return stored;
+        const response = await verifiedResponse(key, RELEASE.files[key]);
+        await cache.put(new URL(key, BASE), response.clone());
+        return response;
+    })());
+});
+
+self.addEventListener('message', event => {
+    event.waitUntil((async () => {
+        const sender = event.source && await self.clients.get(event.source.id);
+        if (!sender || !sender.url.startsWith(BASE.href)) return;
+        if (!['update', 'claim'].includes(event.data)) return;
+        const all = await self.clients.matchAll({type: 'window', includeUncontrolled: true});
+        const others = all.filter(client => client.id !== sender.id && client.url.startsWith(BASE.href));
+        if (others.length) {
+            sender.postMessage({type: 'forge-update-deferred', other_tabs: others.length});
+            return;
+        }
+        // Le seul onglet demandeur a consenti depuis son menu. Son shell décide du rechargement.
+        sender.postMessage({type: 'forge-update-accepted', build_id: RELEASE.build_id});
+        await self.skipWaiting();
+        await self.clients.claim();
+        // À cet instant il n'y a qu'une fenêtre consentante : garder la version
+        // courante et le dernier cache précédent, sans accumuler chaque livraison.
+        const previous = (await caches.keys()).filter(key => key.startsWith(PREFIX) && key !== CACHE);
+        for (const key of previous.slice(0, -1)) await caches.delete(key);
+    })());
+});

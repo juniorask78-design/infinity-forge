@@ -235,16 +235,16 @@ body {
 
 		<div id="if-update" class="if-panel" role="alertdialog" aria-live="polite">
 			<strong>Nouvelle version disponible</strong>
-			Mettre à jour relance le jeu (une partie en cours sera interrompue).
+			<p>Mettre à jour relance ce menu. Terminez les duels et fermez les autres fenêtres du jeu avant de continuer.</p>
 			<div class="if-actions">
 				<button class="if-button" id="if-update-now" type="button">Mettre à jour</button>
 				<button class="if-button secondary" id="if-update-later" type="button">Plus tard</button>
 			</div>
 		</div>
 
-		<script src="index.js"></script>
+		<script src="forge-bf049ba13363bc45.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":11853296,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4,"serviceWorker":"index.service.worker.js"};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"forge-bf049ba13363bc45","experimentalVK":false,"fileSizes":{"forge-bf049ba13363bc45.pck":11976440,"forge-bf049ba13363bc45.wasm":25019466},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4,"serviceWorker":"index.service.worker.js"};
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
 
@@ -345,12 +345,14 @@ window.ifSafeArea = function () {
 		if (!hasUpdate() || updateRequested) {
 			return;
 		}
+		if (window.forgeDuelActive) {
+			update.querySelector('p').textContent = 'La mise à jour sera disponible au retour au menu. Votre duel continue.';
+			return;
+		}
 		updateRequested = true;
-		update.style.display = 'none';
 		if (registration.waiting != null) {
-			// Le service worker de Godot répond à « update » : il s'active puis recharge les onglets.
+			// Notre worker ne recharge jamais les autres onglets ; il diffère tant qu'ils sont ouverts.
 			registration.waiting.postMessage('update');
-			setTimeout(() => window.location.reload(), 4000);
 		} else {
 			window.location.reload();
 		}
@@ -360,9 +362,7 @@ window.ifSafeArea = function () {
 		if (!hasUpdate()) {
 			return;
 		}
-		if (initializing) {
-			applyUpdate();
-		} else if (!updateRequested) {
+		if (!updateRequested && !window.forgeDuelActive) {
 			update.style.display = 'block';
 		}
 	}
@@ -392,9 +392,23 @@ window.ifSafeArea = function () {
 	}
 
 	if (GODOT_CONFIG['serviceWorker'] && 'serviceWorker' in navigator) {
+		navigator.serviceWorker.addEventListener('message', (event) => {
+			if (event.data && event.data.type === 'forge-update-deferred') {
+				updateRequested = false;
+				update.querySelector('p').textContent = 'Fermez les autres fenêtres du jeu après leurs duels, puis réessayez. Aucune partie n’a été interrompue.';
+				update.style.display = 'block';
+			}
+		});
+		window.addEventListener('forge-scene-changed', () => {
+			if (window.forgeDuelActive) update.style.display = 'none';
+			else offerUpdate();
+		});
 		navigator.serviceWorker.addEventListener('controllerchange', () => {
 			if (updateRequested) {
-				setTimeout(() => window.location.reload(), 1500);
+				setTimeout(() => {
+					if (!window.forgeDuelActive) window.location.reload();
+					else { updateRequested = false; updateReady = true; }
+				}, 1500);
 			}
 		});
 		// Vérifie aussi dès l'ouverture : le navigateur ne le fait pas toujours tout de suite.
