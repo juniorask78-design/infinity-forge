@@ -8,6 +8,7 @@
 		     cas de perte de l'affichage WebGL, et mise à jour du jeu installé (PWA). -->
 		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, viewport-fit=cover">
 		<meta name="theme-color" content="#141a33">
+		<meta name="apple-mobile-web-app-capable" content="yes">
 		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 		<title>Infinity Forge</title>
 		<style>
@@ -29,6 +30,7 @@ html, body {
 	width: 100%;
 	height: 100vh;
 	height: 100dvh;
+	height: max(100dvh, var(--if-screen-height, 0px));
 	background-color: var(--nuit-2);
 }
 
@@ -49,6 +51,7 @@ body {
 	width: 100vw;
 	height: 100vh;
 	height: 100dvh;
+	height: max(100dvh, var(--if-screen-height, 0px));
 	display: block;
 }
 
@@ -249,13 +252,25 @@ body {
 			</div>
 		</div>
 
-		<script src="forge-f923315be5fe52fc.js"></script>
+		<script src="forge-a609864dae6ad974.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":0,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"forge-f923315be5fe52fc","experimentalVK":false,"fileSizes":{"forge-f923315be5fe52fc.pck":11987472,"forge-f923315be5fe52fc.wasm":25019466},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4,"serviceWorker":"index.service.worker.js"};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":0,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"forge-a609864dae6ad974","experimentalVK":false,"fileSizes":{"forge-a609864dae6ad974.pck":11944712,"forge-a609864dae6ad974.wasm":25019466},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4,"serviceWorker":"index.service.worker.js"};
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
 
-// La hauteur CSS couvre la fenêtre, même si innerHeight omet une zone système en PWA iOS.
+// Le décor couvre aussi la zone de la barre d'accueil d'une PWA iOS plein écran.
+// Un iPad en fenêtre ou en Split View garde la taille de sa fenêtre, pas celle de l'écran.
+function installedDisplayHeight(view, display, insets, installedApple) {
+	if (!installedApple || ![view.w, view.h, display.w, display.h, insets.t, insets.b].every(Number.isFinite) ||
+		view.w <= 0 || view.h <= 0 || display.w <= 0 || display.h <= 0) return 0;
+	const wide = view.w >= view.h;
+	const screenW = wide ? Math.max(display.w, display.h) : Math.min(display.w, display.h);
+	const screenH = wide ? Math.min(display.w, display.h) : Math.max(display.w, display.h);
+	const missing = screenH - view.h;
+	const systemSpace = Math.max(44, insets.t + insets.b + 4);
+	return Math.abs(screenW - view.w) <= 1 && missing >= 0 && missing <= systemSpace ? screenH : 0;
+}
+
 // Godot est exporté en politique « None » : le shell possède la taille du canvas, le moteur
 // observe son buffer. Ne pas ajouter de padding au canvas : le jeu protège déjà ses commandes.
 (function fitCanvas() {
@@ -263,6 +278,20 @@ const engine = new Engine(GODOT_CONFIG);
 	let pending = false;
 	function fit() {
 		pending = false;
+		const probe = window.getComputedStyle(document.getElementById('if-safe'));
+		const apple = /iPhone|iPad|iPod/.test(navigator.userAgent) ||
+			(navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+		const installed = navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+		const unobscured = !window.visualViewport || window.visualViewport.height >= window.innerHeight - 4;
+		const displayHeight = installedDisplayHeight(
+			{w: window.innerWidth, h: window.innerHeight},
+			{w: window.screen.width, h: window.screen.height},
+			{t: parseFloat(probe.paddingTop) || 0, b: parseFloat(probe.paddingBottom) || 0},
+			apple && installed && unobscured);
+		const frameStyle = document.documentElement.style;
+		if (frameStyle.getPropertyValue('--if-screen-height') !== displayHeight + 'px') {
+			frameStyle.setProperty('--if-screen-height', displayHeight + 'px');
+		}
 		const rect = canvas.getBoundingClientRect();
 		if (rect.width <= 0 || rect.height <= 0) return;
 		const ratio = window.devicePixelRatio || 1;
