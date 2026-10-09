@@ -1,7 +1,7 @@
 {
-  "version": "0.3.5.1",
-  "build_id": "2bb2204503abfc36f34caea7d975eb8f0095784d06c9aa9b761977adafbe21c1",
-  "source_revision": "acfbb6ec1c547e4dc975776a34490af465b1bd2dc63185d87ee50fc85422ab82",
+  "version": "0.3.5.2",
+  "build_id": "f86629bf698d5e72f90bd12b1e954ccc3fa551dc0dc23aa03c36eba14bf3e279",
+  "source_revision": "29ce816aca5098eb2c78cef04696e767673266b235fdabdf7442defd33275068",
   "protocol": 4,
   "rules_revision": 6,
   "source_commit": null,
@@ -11,23 +11,23 @@
       "bytes": 100108,
       "sha256": "cb1980c88089573bcacd7221d777c689bb8bbd778799f24c27fca0fe5f774d6d"
     },
-    "forge-2bb2204503abfc36.audio.position.worklet.js": {
+    "forge-f86629bf698d5e72.audio.position.worklet.js": {
       "bytes": 2973,
       "sha256": "be33985bc7160d6bf9646f259cd86b259cd67b02ccb297ee5c44f8ac84327bc8"
     },
-    "forge-2bb2204503abfc36.audio.worklet.js": {
+    "forge-f86629bf698d5e72.audio.worklet.js": {
       "bytes": 7298,
       "sha256": "5b476a9c9ce642c0ee4256436d1bc31d9c38f868aca0f9a8e2a57c18d2dec2a3"
     },
-    "forge-2bb2204503abfc36.js": {
+    "forge-f86629bf698d5e72.js": {
       "bytes": 254525,
       "sha256": "662c951e5c2ca11c13a7afc3132c84ee6c7d7eaa43026a9aa61a55e8f290c737"
     },
-    "forge-2bb2204503abfc36.pck": {
-      "bytes": 11949256,
-      "sha256": "391522970156923c1d0d8672c2cce8653b9eb0247c6b9ac327ec090d5c28cf13"
+    "forge-f86629bf698d5e72.pck": {
+      "bytes": 11952700,
+      "sha256": "fa7c93315a38d20cb14b31ff3169de358c40264e1f8bb1bf3cebb9b7954590a7"
     },
-    "forge-2bb2204503abfc36.wasm": {
+    "forge-f86629bf698d5e72.wasm": {
       "bytes": 25019466,
       "sha256": "4d341042d0a211eb19ece46e2918d9f0b0baa3c4b1868e7dd4d803732be2c998"
     },
@@ -48,8 +48,8 @@
       "sha256": "d157638f10eacb292809d196a739ebe762819d38e6eee689fe1f507d412f2a62"
     },
     "index.html": {
-      "bytes": 19142,
-      "sha256": "1acc604be166a5bef5fb5cc8c508797cbe8bcadfd3475e5d5ebaeb7416691645"
+      "bytes": 19130,
+      "sha256": "d60472b54da9135356449af402ce5c36ec4a18bebdeac1a6832aea93c4d78195"
     },
     "index.icon.png": {
       "bytes": 13954,
